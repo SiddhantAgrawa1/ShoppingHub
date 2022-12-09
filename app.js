@@ -124,6 +124,15 @@ app.get('/signout', auth,async (req,res) => {
     }
 })
 
-app.listen(PORT,() => {
-    console.log(`Started on port ${PORT}`);
+mongoose.connect(process.env.DB)
+.then(() => {
+    console.log("Connection to database is successfull");
+    app.listen(PORT,() => {
+        console.log(`Started on port ${PORT}`);
+    })
 })
+.catch((error) => {
+    console.log("Unable to connect to database",error);
+})   
+
+
