@@ -3,7 +3,8 @@ var bodyParser = require('body-parser')
 require('./db/conn');
 require('dotenv').config()
 const app = express();
-// const PORT =  8000;
+const path = require('path');
+const PORT = process.env.PORT || 8000;
 const {Signup, ProductList,Cart, Order} = require('./models/model');
 app.use(express.json())
 const bcryptjs = require('bcryptjs');
@@ -13,6 +14,11 @@ app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
 app.use(bodyParser.json())
+app.use(express.static(path.join(__dirname,'./client/build')))
+
+app.get("*", (req,res) => {
+    res.sendFile(path.join(__dirname,"./client/build/index.html"))
+})
 
 app.get('/data',async(req,res) => {
     const data = await ProductList.find()
@@ -118,6 +124,6 @@ app.get('/signout', auth,async (req,res) => {
     }
 })
 
-app.listen(process.env.PORT,() => {
-    console.log(`Started on port ${process.env.PORT}`);
+app.listen(PORT,() => {
+    console.log(`Started on port ${PORT}`);
 })
