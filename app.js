@@ -1,14 +1,14 @@
 const express = require('express');
 var bodyParser = require('body-parser')
-require('../db/conn');
+require('./db/conn');
 require('dotenv').config()
 const app = express();
 const path = require('path');
 const PORT = process.env.PORT || 8000;
-const {Signup, ProductList,Cart, Order} = require('../models/model');
+const {Signup, ProductList,Cart, Order} = require('./models/model');
 app.use(express.json())
 const bcryptjs = require('bcryptjs');
-const auth = require('../middleware/auth');
+const auth = require('./middleware/auth');
 var cookieParser = require('cookie-parser')
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: false }))
