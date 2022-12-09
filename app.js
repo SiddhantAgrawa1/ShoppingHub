@@ -17,6 +17,20 @@ const mongoose = require('mongoose');
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname,'./client/build')))
 
+const connectDB = async () => {
+    try {
+      const conn = await mongoose.connect(process.env.DB);
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+}
+
+  //Connect to the database before listening
+
+
+
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log("listening for requests");
@@ -131,16 +145,4 @@ app.get('/signout', auth,async (req,res) => {
         res.status(404).send({status : 404})
     }
 })
-
-const connectDB = async () => {
-    try {
-      const conn = await mongoose.connect(process.env.DB);
-      console.log(`MongoDB Connected: ${conn.connection.host}`);
-    } catch (error) {
-      console.log(error);
-      process.exit(1);
-    }
-}
-
-  //Connect to the database before listening
 
