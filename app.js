@@ -13,6 +13,7 @@ var cookieParser = require('cookie-parser')
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({ extended: false }))
 // parse application/json
+const mongoose = require('mongoose');
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname,'./client/build')))
 
