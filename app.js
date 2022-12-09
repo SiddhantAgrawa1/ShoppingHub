@@ -38,9 +38,9 @@ connectDB().then(() => {
 })
 
 
-app.get("*", (req,res) => {
-    res.sendFile(path.join(__dirname,"./client/build/index.html"))
-})
+// app.get("*", (req,res) => {
+//     res.sendFile(path.join(__dirname,"./client/build/index.html"))
+// })
 
 app.get('/data',async(req,res) => {
     const data = await ProductList.find()
