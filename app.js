@@ -124,15 +124,20 @@ app.get('/signout', auth,async (req,res) => {
     }
 })
 
-mongoose.connect(process.env.DB)
-.then(() => {
-    console.log("Connection to database is successfull");
-    app.listen(PORT,() => {
-        console.log(`Started on port ${PORT}`);
+const connectDB = async () => {
+    try {
+      const conn = await mongoose.connect(process.env.DB);
+      console.log(`MongoDB Connected: ${conn.connection.host}`);
+    } catch (error) {
+      console.log(error);
+      process.exit(1);
+    }
+}
+
+  //Connect to the database before listening
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log("listening for requests");
     })
 })
-.catch((error) => {
-    console.log("Unable to connect to database",error);
-})   
-
 
