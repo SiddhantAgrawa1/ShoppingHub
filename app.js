@@ -16,6 +16,13 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 app.use(express.static(path.join(__dirname,'./client/build')))
 
+connectDB().then(() => {
+    app.listen(PORT, () => {
+        console.log("listening for requests");
+    })
+})
+
+
 app.get("*", (req,res) => {
     res.sendFile(path.join(__dirname,"./client/build/index.html"))
 })
@@ -135,9 +142,4 @@ const connectDB = async () => {
 }
 
   //Connect to the database before listening
-connectDB().then(() => {
-    app.listen(PORT, () => {
-        console.log("listening for requests");
-    })
-})
 
