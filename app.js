@@ -1,4 +1,6 @@
 const express = require('express');
+const razorpay = require('razorpay')
+const crypto = require('crypto')
 var bodyParser = require('body-parser')
 require('./db/conn');
 require('dotenv').config()
@@ -36,11 +38,6 @@ connectDB().then(() => {
         console.log("listening for requests");
     })
 })
-
-
-// app.get("*", (req,res) => {
-//     res.sendFile(path.join(__dirname,"./client/build/index.html"))
-// })
 
 app.get('/data',async(req,res) => {
     const data = await ProductList.find()
@@ -146,3 +143,83 @@ app.get('/signout', auth,async (req,res) => {
     }
 })
 
+app.post('/orders',auth, async(req,res) => {
+    try{
+        req.product = req.body.product
+        req.address = req.body.address
+        const instances = new razorpay({
+            key_id:process.env.KEY_ID,
+            key_secret:process.env.KEY_SECRET,
+        })
+        
+        const options = {
+            amount : req.body.product['dprice'] * 100,
+            currency:"INR",
+            receipt : crypto.randomBytes(10).toString("hex")
+        }
+        const order = req.body.product;
+        const email = req.user.email;
+        const response = await Order.findOne({email:email});
+        if(response){
+            let orderlist = response.orderlist
+            orderlist.push([req.product,req.address])
+            const resp = await Order.updateMany({email:email}, {$set : {orderlist:orderlist}});
+        }else{
+            const orderlist = [[req.product,req.address]];
+            const temp = new Order({email,orderlist})
+            const resp = await temp.save();
+        }
+        instances.orders.create(options, (error,order) => {
+            if(error){
+                console.log(error)
+                return res.status(400).json({status:400,message : "Something went wrong"})
+            }   
+            res.status(200).json({status : 200,data:order})
+        })
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).json({status:500, message : "Internal server Error!"})
+    }
+})
+
+app.post('/verify', async(req,res) => {
+    try {
+        const {
+            razorpay_order_id,
+            razorpay_payment_id,
+            razorpay_signature  } = req.body
+        const sign = razorpay_order_id + "|" + razorpay_payment_id;
+        const expectedSign = crypto
+            .createHmac("sha256", process.env.KEY_SECRET)
+            .update(sign.toString())
+            .digest("hex")
+        console.log("verify")
+        if(razorpay_signature === expectedSign){
+            return res.status(200).json({message : "Payment Verified successfully"})
+        }else{
+            return res.status(400).json({message : "Invalid signature sent!"})
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({message : "Internal Server Error"})
+    }
+})
+
+app.post('/cancelorder',auth, async(req,res) => {
+    try {
+        const id = req.body.id;
+        const response = await Order.findOne({email:req.user.email});
+        const orderlist = await response.orderlist;
+        const updatedList = orderlist.filter((order) => {
+            if(order[0].id !== id) return order
+        })
+        console.log(updatedList)
+        const updated = await Order.updateMany({email : req.user.email }, {$set : {orderlist : updatedList}})
+        console.log(updated);
+        res.status(200).send({msg:"Order cancelled",status : 200})    
+    } catch (error) {
+        res.status(500).send({msg:"Order cancelled"})    
+    }
+    
+}) 
