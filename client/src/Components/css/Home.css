@@ -1,0 +1,9 @@
+.Home{
+    display : flex;
+    flex-direction : row;
+    flex-wrap:wrap;
+    justify-content: center;
+    align-items: center;
+    margin: 1rem;
+    background-color: #252525;
+}

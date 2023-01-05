@@ -41,12 +41,13 @@ connectDB().then(() => {
 
 app.get('/data',async(req,res) => {
     const data = await ProductList.find()
+    // console.log(data)
     res.send({data:data});
 })
 
 app.get('/auth',auth,async(req,res)=>{
     // console.log("user firstname",req.user.firstname);
-    res.status(200).send({msg : "Authentication suceessfull", name : req.user.firstname});
+    res.status(200).send({msg : "Authentication suceessfull", name : req.user.firstname, data:req.user});
 })
 
 app.post('/cart',auth,async (req,res) => {
@@ -101,6 +102,7 @@ app.post("/signup",async (req,res) =>{
     const user = new Signup({firstname,lastname,email,password})
     const response = await user.save();
     const token =  await user.generateAuthToken();
+    console.log(token)
     res.cookie('jwt',token,{
         expires : new Date(Date.now() + 3000000),
         httpOnly : true
