@@ -2,7 +2,7 @@ const express = require('express');
 const razorpay = require('razorpay')
 const crypto = require('crypto')
 var bodyParser = require('body-parser')
-require('./db/conn');
+// require('./db/conn');
 require('dotenv').config()
 const app = express();
 const path = require('path');
