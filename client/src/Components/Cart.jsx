@@ -18,8 +18,8 @@ function Cart() {
     const cart = async () => {
         const response = await fetch('/cart')
         const data = await response.json()
-        
-        if(data.status === 200)
+        // console.log(data.data)
+        if(data.status === 200 && data.data != null)
             setCartList([...data.data.cartlist])
         else   
             setCartList([]);
@@ -45,7 +45,7 @@ function Cart() {
             body : JSON.stringify({id : data.id})
         })
         const resp = await response.json()
-        console.log(resp)
+        // console.log(resp)
         if (resp.status == 200){
             alert("Item removed");
             cart()

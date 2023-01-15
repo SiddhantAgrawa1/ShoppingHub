@@ -10,10 +10,10 @@ function Orders() {
     const order = async () => {
         const response = await fetch('/order')
         const data = await response.json()
-        console.log("data : ",data)
-        if(data.status === 200){
+        // console.log("data : ",data)
+        if(data.status === 200 && data.data != null){
             setOrderList([...data.data.orderlist])
-            console.log(OrderList)
+            // console.log(OrderList)
         }
         else   
             setOrderList([]);

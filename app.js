@@ -90,7 +90,12 @@ app.post('/removefromcart', auth,async(req,res) => {
         const id = req.body.id;
         let data = await Cart.findOne({email:email});
         filteredData = data.cartlist.filter((data) => {if (data.id != id) return data})
-        const response = await Cart.updateMany({email : email}, {$set : {cartlist : filteredData}})
+        // console.log("filtereddata : ",filteredData)
+        if (filteredData.length != 0){
+            let response = await Cart.updateMany({email : email}, {$set : {cartlist : filteredData}})
+        }else{
+            let response = await Cart.deleteMany({email : email})
+        }
         res.send({status : 200})
     }catch(error){
         // console.log(error)
@@ -234,7 +239,14 @@ app.post('/cancelorder',auth, async(req,res) => {
         const updatedList = orderlist.filter((order) => {
             if(order[0].id !== id) return order
         })
-        const updated = await Order.updateMany({email : req.user.email }, {$set : {orderlist : updatedList}})
+        // console.log("updated: ",updatedList)
+        if (updatedList.length != 0){
+            const updated = await Order.updateMany({email : req.user.email }, {$set : {orderlist : updatedList}})
+        }else{
+            let response = await Order.deleteMany({email : req.user.email})
+            // console.log("res",response);
+        }
+        // console.log("updated : ",updated)
         res.status(200).send({msg:"Order cancelled",status : 200})    
     } catch (error) {
         res.status(500).send({msg:"Order cancelled"})    
