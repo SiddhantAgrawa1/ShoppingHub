@@ -13,6 +13,7 @@ function Home() {
         status : false,
         address : {},
     });
+
     useEffect(() => {
         fetch('/data')
             .then((response) => response.json())

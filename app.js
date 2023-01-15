@@ -29,10 +29,7 @@ const connectDB = async () => {
     }
 }
 
-  //Connect to the database before listening
-
-
-
+//Connect to the database before listening
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log("listening for requests");
@@ -47,22 +44,38 @@ app.get('/data',async(req,res) => {
 
 app.get('/auth',auth,async(req,res)=>{
     // console.log("user firstname",req.user.firstname);
-    res.status(200).send({msg : "Authentication suceessfull", name : req.user.firstname, data:req.user});
+    res.status(200).send({msg : "Authentication suceessfull",status:200, name : req.user.firstname, data:req.user});
 })
 
 app.post('/cart',auth,async (req,res) => {
-    const email = req.user.email;
-    const response = await Cart.findOne({email:email});
-    if(response){
-        let cartlist = response.cartlist
-        cartlist.push(req.body.product)
-        const resp = await Cart.updateMany({email:email}, {$set : {cartlist:cartlist}});
-    }else{
-        const cartlist = [req.body.product];
-        const temp = new Cart({email,cartlist})
-        const resp = await temp.save();
+    try{
+        const email = req.user.email;
+        const response = await Cart.findOne({email:email});
+        if(response){
+            let cartlist = response.cartlist
+            let found = false
+            for(let i=0; i<cartlist.length; i++){
+                if(cartlist[i].id == req.body.product.id){
+                    found = true;
+                    break;
+                }
+            }
+        
+            if (found == false){
+                cartlist.push(req.body.product)
+                const resp = await Cart.updateMany({email:email}, {$set : {cartlist:cartlist}});
+            }
+        }
+        else{
+            const cartlist = [req.body.product];
+            const temp = new Cart({email,cartlist})
+            const resp = await temp.save();
+        }
+        res.status(200).send({msg : "Item added to the cart"});
     }
-    res.status(200).send({msg : "Item added to the cart"});
+    catch(error){
+        res.status(400).send({msg : "Item added to the cart"});
+    }  
 })
 
 app.get('/cart',auth,async(req,res) => {
@@ -71,19 +84,18 @@ app.get('/cart',auth,async(req,res) => {
     res.status(200).send({data : data, status : 200})
 })
 
-app.post('/order',auth,async (req,res) => {
-    const email = req.user.email;
-    const response = await Order.findOne({email:email});
-    if(response){
-        let orderlist = response.orderlist
-        orderlist.push(req.body.product)
-        const resp = await Order.updateMany({email:email}, {$set : {orderlist:orderlist}});
-    }else{
-        const orderlist = [req.body.product];
-        const temp = new Order({email,orderlist})
-        const resp = await temp.save();
+app.post('/removefromcart', auth,async(req,res) => {
+    try{
+        const email = req.user.email;
+        const id = req.body.id;
+        let data = await Cart.findOne({email:email});
+        filteredData = data.cartlist.filter((data) => {if (data.id != id) return data})
+        const response = await Cart.updateMany({email : email}, {$set : {cartlist : filteredData}})
+        res.send({status : 200})
+    }catch(error){
+        // console.log(error)
+        res.send({status : 500})
     }
-    res.status(200).send({msg : "Item added to the cart"});
 })
 
 app.get('/order',auth,async(req,res) => {
@@ -102,7 +114,7 @@ app.post("/signup",async (req,res) =>{
     const user = new Signup({firstname,lastname,email,password})
     const response = await user.save();
     const token =  await user.generateAuthToken();
-    console.log(token)
+    // console.log(token)
     res.cookie('jwt',token,{
         expires : new Date(Date.now() + 3000000),
         httpOnly : true
@@ -120,7 +132,7 @@ app.post("/signin",async(req,res) =>{
     if(user ? await bcryptjs.compare(password,user.password) : false){
         const token =  await user.generateAuthToken();
         res.cookie('jwt',token,{
-            expires : new Date(Date.now() + 300000),
+            expires : new Date(Date.now() + 3000000),
             httpOnly : true
         })
         // console.log("sign in successfull")
@@ -136,7 +148,6 @@ app.get('/signout', auth,async (req,res) => {
         const email = req.user.email;
         const response = await Signup.findOne({email:email});
         response.tokens.pop();
-        // console.log("logout",response)  
         const resp = await Signup.updateMany({email:email}, {$set : {tokens:response.tokens}});
         res.status(200).send({status : 200});
     }
@@ -164,18 +175,29 @@ app.post('/orders',auth, async(req,res) => {
         const response = await Order.findOne({email:email});
         if(response){
             let orderlist = response.orderlist
-            orderlist.push([req.product,req.address])
-            const resp = await Order.updateMany({email:email}, {$set : {orderlist:orderlist}});
+            let found = false;
+            for(let i=0; i<orderlist.length; i++){
+                if(orderlist[i][0].id == req.product.id){
+                    found = true;
+                    break;
+                }
+            }
+            if(found == false){
+                orderlist.push([req.product,req.address])
+                const resp = await Order.updateMany({email:email}, {$set : {orderlist:orderlist}});
+            }
         }else{
             const orderlist = [[req.product,req.address]];
             const temp = new Order({email,orderlist})
             const resp = await temp.save();
         }
         instances.orders.create(options, (error,order) => {
+            // console.log(options)
             if(error){
-                console.log(error)
+                console.log("error",error)
                 return res.status(400).json({status:400,message : "Something went wrong"})
             }   
+            
             res.status(200).json({status : 200,data:order})
         })
     }
@@ -187,22 +209,17 @@ app.post('/orders',auth, async(req,res) => {
 
 app.post('/verify', async(req,res) => {
     try {
-        const {
-            razorpay_order_id,
-            razorpay_payment_id,
-            razorpay_signature  } = req.body
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature  } = req.body
+
         const sign = razorpay_order_id + "|" + razorpay_payment_id;
-        const expectedSign = crypto
-            .createHmac("sha256", process.env.KEY_SECRET)
-            .update(sign.toString())
-            .digest("hex")
-        console.log("verify")
-        if(razorpay_signature === expectedSign){
+        const expectedSign = crypto.createHmac("sha256", process.env.KEY_SECRET).update(sign.toString()).digest("hex")
+
+        if(razorpay_signature === expectedSign)
             return res.status(200).json({message : "Payment Verified successfully"})
-        }else{
+        else
             return res.status(400).json({message : "Invalid signature sent!"})
-        }
-    } catch (error) {
+        
+    }catch (error) {
         console.log(error);
         res.status(500).json({message : "Internal Server Error"})
     }
@@ -213,15 +230,13 @@ app.post('/cancelorder',auth, async(req,res) => {
         const id = req.body.id;
         const response = await Order.findOne({email:req.user.email});
         const orderlist = await response.orderlist;
+        
         const updatedList = orderlist.filter((order) => {
             if(order[0].id !== id) return order
         })
-        console.log(updatedList)
         const updated = await Order.updateMany({email : req.user.email }, {$set : {orderlist : updatedList}})
-        console.log(updated);
         res.status(200).send({msg:"Order cancelled",status : 200})    
     } catch (error) {
         res.status(500).send({msg:"Order cancelled"})    
-    }
-    
+    }    
 }) 

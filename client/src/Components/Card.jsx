@@ -6,6 +6,7 @@ const Card = (props) => {
     console.log("Props : ",props)
     const navigate = useNavigate();
     const [ads, setads] = useState(false);
+
     const addtoCart = async() => {
         const response = await fetch('/cart',{
             method : "POST",
@@ -26,7 +27,8 @@ const Card = (props) => {
     const buynow = async() => {
         const response = await fetch('/auth')
         const data = await response.json()
-        if(response.status === 200){
+        console.log(data)
+        if(data.status === 200){
             setads(true)
             props.setAddress({
                 status : true,

@@ -3,8 +3,11 @@ import './css/Home.css'
 import Typography from '@mui/material/Typography';
 import './css/Card.css';
 import Address from './Address';
+import { useNavigate } from "react-router-dom";
+
 
 function Cart() {
+
     const [address, setAddress] = useState({
         status : false,
         address : {},
@@ -12,16 +15,17 @@ function Cart() {
 
     const [CartList, setCartList] = useState([]);
     
-    useEffect(() => {
-        const cart = async () => {
-            const response = await fetch('/cart')
-            const data = await response.json()
-            
-            if(data.status === 200)
-                setCartList([...data.data.cartlist])
-            else   
-                setCartList([]);
-        }
+    const cart = async () => {
+        const response = await fetch('/cart')
+        const data = await response.json()
+        
+        if(data.status === 200)
+            setCartList([...data.data.cartlist])
+        else   
+            setCartList([]);
+    }
+
+    useEffect(() => {   
         cart()
     },[])
     
@@ -32,6 +36,24 @@ function Cart() {
         })
     }
 
+    const remove = async(data) => {
+        const response = await fetch('/removefromcart',{
+            method : 'POST', 
+            headers : {
+                'Content-Type' : 'application/json'
+            }, 
+            body : JSON.stringify({id : data.id})
+        })
+        const resp = await response.json()
+        console.log(resp)
+        if (resp.status == 200){
+            alert("Item removed");
+            cart()
+        }else{
+            alert("Unable to remove item");
+        }
+            
+    }
 
     return (
         <>
@@ -56,6 +78,7 @@ function Cart() {
                                         <span id='discount'>Flat {data['discount']} off</span>
                                         </div>
                                         <div>
+                                            <button onClick={() => remove(data)}>Remove</button>
                                             <button onClick={() => buynow(data)}>Buy Now</button>
                                         </div>
                                     </div>

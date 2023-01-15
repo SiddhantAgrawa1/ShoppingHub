@@ -1,27 +1,25 @@
 import { useState, useEffect } from "react";
-// import Card from "./Card";
 import './css/Home.css'
-import { useNavigate } from 'react-router-dom';
 import Typography from '@mui/material/Typography';
-// import { response } from "express";
+
 
 function Orders() {
     
     const [OrderList, setOrderList] = useState([]);
-    const navigate = useNavigate();
 
-    useEffect(() => {
-        const order = async () => {
-            const response = await fetch('/order')
-            const data = await response.json()
-            console.log("data : ",data)
-            if(data.status === 200){
-                setOrderList([...data.data.orderlist])
-                console.log(OrderList)
-            }
-            else   
-                setOrderList([]);
+    const order = async () => {
+        const response = await fetch('/order')
+        const data = await response.json()
+        console.log("data : ",data)
+        if(data.status === 200){
+            setOrderList([...data.data.orderlist])
+            console.log(OrderList)
         }
+        else   
+            setOrderList([]);
+    }
+
+    useEffect(() => {    
         order()
     },[])
     
@@ -39,7 +37,7 @@ function Orders() {
         console.log(temp)
         if(temp.status === 200){
             alert("Order cancelled successfully! Your amount will be refunded soon");
-            navigate('/')
+            order();
         }else{
             alert("Please try after some time");
         }

@@ -16,7 +16,7 @@ import AdbIcon from '@mui/icons-material/Adb';
 import {Link} from 'react-router-dom'
 import './css/Navbar.css';
 import { useState, useEffect } from 'react';
-import { getTableRowUtilityClass } from '@mui/material';
+// import { getTableRowUtilityClass } from '@mui/material';
 
 const darkTheme = createTheme({
   palette: {
@@ -91,14 +91,14 @@ function ResponsiveAppBar() {
             sx={{
               mr: 2,
               display: { xs: 'none', md: 'flex' },
-              fontFamily: 'monospace',
+              fontFamily: 'Cursive',
               fontWeight: 700,
-              letterSpacing: '.3rem',
+              letterSpacing: '.2rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            LOGO
+            ShoppingHub
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
@@ -152,14 +152,14 @@ function ResponsiveAppBar() {
               mr: 2,
               display: { xs: 'flex', md: 'none' },
               flexGrow: 1,
-              fontFamily: 'monospace',
+              fontFamily: 'Cursive',
               fontWeight: 700,
-              letterSpacing: '.3rem',
+              letterSpacing: '.2rem',
               color: 'inherit',
               textDecoration: 'none',
             }}
           >
-            LOGO
+            ShoppingHub
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
           <MenuItem key="1" onClick={handleCloseNavMenu}>

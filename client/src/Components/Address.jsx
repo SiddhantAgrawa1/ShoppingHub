@@ -5,7 +5,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import { Link, redirect } from 'react-router-dom';
+import { Link, redirect, useLocation, useSearchParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -13,6 +13,7 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import {useState} from 'react';
+import { useEffect } from 'react';
 
 function Copyright(props) {
 	return (
@@ -30,6 +31,7 @@ function Copyright(props) {
 const theme = createTheme();
 
 export default function Address({data}) {
+	
 	
 	const [formValidator,setFormValidator] = React.useState({
 		address : true,
@@ -88,13 +90,11 @@ export default function Address({data}) {
 					body: JSON.stringify({product : data, address : [address,pincode,country]})
 				})
 				const temp = await response.json()
-				console.log(temp);
 				setDetails("");
 				const res = await initPayment(temp.data)
-				console.log(res);
 			}catch(error){
-				console.log(error)
-				
+				// console.log(error)
+				alert("Please try after some time")
 			}
 		}
 		
@@ -120,8 +120,16 @@ export default function Address({data}) {
 					console.log(verification);
 	
 				} catch (error) {
-					console.log(error);
+					// console.log(error);
+					alert("Thank You for using payment gateway.It is added for testing purpose.Please proceed to add item")
+					navigate('/order')
 				}
+			},
+			"modal": {
+				"ondismiss": function(){
+					alert("Thank You for using payment gateway.It is added for testing purpose.Order placed successfully!")
+					navigate('/order')
+				 }
 			},
 			theme : {
 				color : "#3399cc"

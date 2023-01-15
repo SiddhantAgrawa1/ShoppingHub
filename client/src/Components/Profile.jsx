@@ -10,19 +10,19 @@ const Profile = () => {
         email : ""
     })
 
-    const auth = async() => {
+    const getDetails = async() => {
+        // Fetching user details
         const response = await fetch('/auth')
-        const temp = await response.json()
-        console.log(temp)
+        const user = await response.json()
         setData({
             status : 200,
-            name : temp.name +" " + temp.data.lastname,
-            email : temp.data.email
+            name : user.name +" " + user.data.lastname,
+            email : user.data.email
         })
     }
     
     useEffect(() => {
-        auth()
+        getDetails()
     },[])
 
     return(
@@ -35,7 +35,7 @@ const Profile = () => {
                     <p>Your Email : {data.email}</p>
                 </div>
             :
-            <Typography component="h1"  variant="h5" color="primary">Please add some products!</Typography>
+            <Typography component="h1"  variant="h5" color="primary">Please login!</Typography>
         }
         </>
     )
